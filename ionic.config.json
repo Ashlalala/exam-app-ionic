@@ -1,0 +1,7 @@
+{
+  "name": "exam-app-ionic",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}

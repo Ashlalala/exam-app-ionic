@@ -1,23 +1,46 @@
-<template>
-  <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Tab 3</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Tab 3</ion-title>
-        </ion-toolbar>
-      </ion-header>
 
-      <ExploreContainer name="Tab 3 page" />
-    </ion-content>
-  </ion-page>
-</template>
+<ion-router>
+  <ion-route url="/" component="page-one"></ion-route>
+  <ion-route url="/page-two" component="page-two"></ion-route>
+</ion-router>
 
-<script setup lang="ts">
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/vue';
-import ExploreContainer from '@/components/ExploreContainer.vue';
+<ion-router-outlet></ion-router-outlet>
+
+<script>
+class PageOne extends HTMLElement {
+  connectedCallback() {
+    this.innerHTML = `
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>Page One</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="ion-padding">
+    This is the content for page 1.
+    <ion-router-link href="#/page-two">
+      <ion-button>Go to Page 2</ion-button>
+    </ion-router-link>
+  </ion-content>`;
+  }
+}
+
+class PageTwo extends HTMLElement {
+  connectedCallback() {
+    this.innerHTML = `
+  <ion-header>
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-back-button default-href="/"></ion-back-button>
+      </ion-buttons>
+      <ion-title>Page Two</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="ion-padding">
+    This is the content for page 2.
+  </ion-content>`;
+  }
+}
+
+customElements.define('page-one', PageOne);
+customElements.define('page-two', PageTwo);
 </script>

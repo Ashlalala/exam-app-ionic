@@ -1,26 +1,33 @@
 <template>
   <base-layout :title="response.exam ? response.exam.name : ''">
-    <template v-if="response.qas" v-for="qa in response.qas[store.examPage]">
-      <ion-radio-group value="space-between">
-        <ion-item v-if="qa.ans_r">
-          <ion-radio :value="qa.ans_r" :name="qa.id" justify="space-between" onChange="change()">{{qa.ans_r}}</ion-radio>
-        </ion-item>
-        <ion-item v-if="qa.ans_w_1">
-          <ion-radio :value="qa.ans_w_1" :name="qa.id" justify="space-between" onChange="change()">{{qa.ans_w_1}}</ion-radio>
-        </ion-item>
-        <ion-item v-if="qa.ans_w_2">
-          <ion-radio :value="qa.ans_w_2" :name="qa.id" justify="space-between" onChange="change()">{{ qa.ans_w_2 }}</ion-radio>
-        </ion-item>
-        <ion-item v-if="qa.ans_w_3">
-          <ion-radio :value="qa.ans_w_3" :name="qa.id" justify="space-between" onChange="change()">{{ qa.ans_w_3 }}</ion-radio>
-        </ion-item>
-        <ion-item v-if="qa.ans_w_4">
-          <ion-radio :value="qa.ans_w_4" :name="qa.id" justify="space-between" onChange="change()">{{ qa.ans_w_4 }}</ion-radio>
-        </ion-item>
-      </ion-radio-group>
+    <template v-if="response.qas" v-for="qa in [response.qas[store.examPage], 'l']">
+      <ion-card v-if="qa.question">
+        <ion-card-header>
+          <ion-card-title>{{ qa.question }}</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-radio-group value="space-between">
+            <ion-item v-if="qa.ans_r">
+              <ion-radio :value="qa.ans_r" :name="qa.id" justify="space-between" onChange="change()">{{qa.ans_r}}</ion-radio>
+            </ion-item>
+            <ion-item v-if="qa.ans_w_1">
+              <ion-radio :value="qa.ans_w_1" :name="qa.id" justify="space-between" onChange="change()">{{qa.ans_w_1}}</ion-radio>
+            </ion-item>
+          <ion-item v-if="qa.ans_w_2">
+            <ion-radio :value="qa.ans_w_2" :name="qa.id" justify="space-between" onChange="change()">{{ qa.ans_w_2 }}</ion-radio>
+          </ion-item>
+          <ion-item v-if="qa.ans_w_3">
+            <ion-radio :value="qa.ans_w_3" :name="qa.id" justify="space-between" onChange="change()">{{ qa.ans_w_3 }}</ion-radio>
+          </ion-item>
+          <ion-item v-if="qa.ans_w_4">
+            <ion-radio :value="qa.ans_w_4" :name="qa.id" justify="space-between" onChange="change()">{{ qa.ans_w_4 }}</ion-radio>
+          </ion-item>
+        </ion-radio-group>
+      </ion-card-content>
+      </ion-card>
     </template>
     <div class="footerBtn">
-      <ion-button expand="full" @click.prevent="submitExam">Submit Exam</ion-button>
+      <ion-button expand="full" @click.prevent="submitAns">Submit Answer</ion-button>
       <ion-button expand="full" fill="outline" @click.prevent="cancelExam">Cancel Exam</ion-button>
     </div>
   </base-layout>
@@ -51,8 +58,8 @@ const form = ref({
 
 const page = ref(1)
 
-function submitExam(){
-  console.log(form.value)
+function submitAns(){
+  store.nextPage()
 }
 function cancelExam(){
   for(qa in response.value.qas[store.examPage]){
@@ -103,7 +110,7 @@ function firstBig(string) {
 
 <style>
 .footerBtn {
-  position: sticky;
+  position: fixed;
   left: 0;
   bottom: 0;
   width: 100%;

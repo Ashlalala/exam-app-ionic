@@ -9,7 +9,12 @@ import { defineStore } from 'pinia'
 export const useMainStore = defineStore('Main', {
   state: () => {
     return {
-      examPage: 1
+      examPage: 0
+    }
+  },
+  actions: {
+    nextPage(){
+      this.examPage ++
     }
   }
 })

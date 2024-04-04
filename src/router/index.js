@@ -13,7 +13,7 @@ const routes = [
       },
       {
         path: 'exams',
-        component: () => import('@/views/ExamsPage.vue'),
+        component: () => import('@/views/CatsPage.vue'),
       },
       {
         path: 'profile',
@@ -22,19 +22,45 @@ const routes = [
       {
         path: 'tab3',
         component: () => import('@/views/Tab3Page.vue')
+      },
+      {
+        path: 'exams/:category',
+        component: () => import('@/views/SubCatsPage.vue'),
+      },
+      {
+        path: 'exams/:category/:subCategory',
+        component: () => import('@/views/ExamSubCatsPage.vue')
+      },
+      {
+        path: 'exams/:category/:subCategory/create',
+        component: () => import('@/views/ExamCreatePage.vue')
       }
     ]
+  },
+
+  {
+    path: '/exam/:examId/',
+    component: () => import('@/views/ExamPage.vue'),
   },
   {
-    path: '/exams/:category',
-    component: () => import('@/views/SubCatsPage.vue'),
-    children: [
-      {
-        path: '/:subCategory',
-        component: () => import('@/views/ExamSubCatsPage.vue')
-      }
-    ]
+    path: '/exam/:examId/edit',
+    component: () => import('@/views/ExamEditPage.vue')
   },
+  {
+    path: '/exam/:examId/take',
+    component: () => import('@/views/ExamTakePage.vue')
+  },
+  
+
+
+  {
+    path: '/users/',
+    component: () => import('@/views/ExamTakePage.vue'),
+  },
+  {
+    path: '/users/:id',
+    component: () => import('@/views/ExamTakePage.vue')
+  }
 
 ]
 

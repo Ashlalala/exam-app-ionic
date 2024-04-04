@@ -1,12 +1,13 @@
 <template>
   <ion-list>
     <ion-list-header>
-      <ion-label>Physics > Partical</ion-label>
+      <ion-label><h1>{{firstBig(cat)}} > {{firstBig(subCat)}}</h1></ion-label>
     </ion-list-header>
-    <ion-item v-for="exam in response.exams">
+    <!-- //change to ion-card  -->
+    <ion-item v-for="exam in exams" :router-link="'/exam/' + exam.id"> 
       <ion-label class="ion-text-nowrap">
         <h2>{{ exam.name }}</h2>
-        <p>{{ exam.description }}}</p>
+        <p>{{ exam.description }}</p>
       </ion-label>
     </ion-item>
   </ion-list>
@@ -14,16 +15,29 @@
 
 <script setup>
 import { IonItem, IonLabel, IonList, IonListHeader } from '@ionic/vue'; //for the list 
-import axios from 'axios';
 import { ref } from 'vue';
 import { inject } from 'vue'
 const API_URL = inject('API_URL')
 
-const response = ref({})
 
-
-// axios.get('http://localhost:8000/sanctum/csrf-cookie')
-axios.get(API_URL+'/api/exams').then(res => {
-  response.value.exams = res.data.data
+defineProps({
+  exams: {
+    type: Array,
+    required: true
+  },
+  cat: {
+    type: String,
+    required: true
+  },
+  subCat: {
+    type: String,
+    required: true
+  }
 })
+
+
+function firstBig(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 </script>

@@ -1,5 +1,11 @@
 <template>
   <base-layout title="Edit Exam">
+  <ion-popover :is-open="popoverOpen" trigger="click-trigger" trigger-action="click" size="cover" side="bottom" alignment="center">
+      <ion-content class="ion-padding">
+        <CreateQuestion @uploaded="uploaded" />
+      </ion-content>
+    </ion-popover>
+    <ion-button @click.prevent="popoverOpen = !popoverOpen" id="click-trigger" expand="block" class="footerBtn">Add Question</ion-button>
     <ion-card>
       <template v-if="response.exam && response.owner">
         <ion-card-header>
@@ -26,19 +32,11 @@
       </template>
     </ion-card>
 
-    <ion-button expand="block" fill="outline" :router-link="URL_EXAM_ID + '/edit'">Save</ion-button>
-
-    <ion-button @click.prevent="popoverOpen = !popoverOpen" id="click-trigger" expand="block">Add Question</ion-button>
-    <ion-popover :is-open="popoverOpen" trigger="click-trigger" trigger-action="click" size="cover">
-      <ion-content class="ion-padding">
-        <CreateQuestion @uploaded="uploaded" />
-      </ion-content>
-    </ion-popover>
-
     <template v-if="response.qas">
       <QuestionList :qas="response.qas" />
     </template>
-  
+
+
   </base-layout>
 </template>
 
@@ -50,10 +48,14 @@ import { ref } from 'vue';
 import { inject } from 'vue';
 import { IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle } from '@ionic/vue';
 import { IonButton, IonContent, IonPopover } from '@ionic/vue';//for popover
+import {useMainStore} from '@/stores/MainStore'
+
+
 
 import CreateQuestion from '@/components/CreateQuestion.vue'
 import QuestionList from '@/components/QuestionList.vue'
 
+const store = useMainStore()
 
 const popoverOpen = ref(false)
 
@@ -62,7 +64,9 @@ const routeParams = useRoute().params
 const API_URL = inject('API_URL')
 const URL_EXAM_ID = routeParams.examId
 
-const response = ref({})
+const response = ref({
+  qas: []
+})
 
 
 
@@ -80,19 +84,43 @@ onMounted(async () => {
 
 async function getQAs() {
   await axios.get(API_URL + '/api/exam/' + URL_EXAM_ID + '/qa').then(res => {
-    console.log(res)
-    // emit('uploaded', true)
-    response.value.qas=res.data.data
+    response.value.qas = []
+    handleQAs(res.data.data)
   })
 }
 
 
+function handleQAs(r){
+  r.forEach(qa => {
+    let qaNew = {
+      question: null,
+      answers: []
+    }
+    qaNew.question = qa.question
+    qaNew.answers = getCleanAndDecrypted([qa.ans_r, qa.ans_1, qa.ans_2, qa.ans_3, qa.ans_4, qa.ans_5], store.secretKey, store.iv) // The right answer should always be first in the arr
+    response.value.qas.push(qaNew)
+  })
+}
 
 
+  
+function getCleanAndDecrypted(arr, key, iv){
+  const ansArr = []
+  arr.forEach((value, index) => {
+    let valueDecrypted = getDAesString(value, key, iv)
+    if(valueDecrypted) {
+      let ansObj = {
+        val: valueDecrypted,
+        right: index == 0 
+      }
+      ansArr.push(ansObj)
+    }
+  })
+  return ansArr
+}
 
 async function getExamAndOwner(){
   await axios.get(API_URL + '/api/exam/' + URL_EXAM_ID).then(async (res) => {
-  console.log(res)
   response.value.exam = res.data.data
   await getExamOwner()
 })
@@ -101,16 +129,29 @@ async function getExamAndOwner(){
 
 async function getExamOwner() {
   await axios.get(API_URL + '/api/user/' + response.value.exam.user_id).then(res => {
-    console.log(res);
     response.value.owner = res.data
-    console.log(response.value.owner)
   })
 }
 
 
 
-
+function getDAesString(encrypted, key, iv) {//解密
+    var key_hash = CryptoJS.MD5(key).toString();
+    var key = CryptoJS.enc.Utf8.parse(key_hash);
+    var iv = CryptoJS.enc.Utf8.parse(iv);
+    var decrypted = CryptoJS.AES.decrypt(encrypted, key,
+        {
+            iv: iv,
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.Pkcs7
+        });
+    return decrypted.toString(CryptoJS.enc.Utf8);
+}
 function firstBig(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 </script>
+
+<style>
+
+</style>

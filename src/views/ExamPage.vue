@@ -1,26 +1,9 @@
 <template>
 <base-layout title="Exams">
-  <ion-card>
-    <template v-if="response.exam && response.owner">
-      <ion-card-header>
-        <ion-card-title>{{ response.exam.name }}</ion-card-title>
-        <ion-card-subtitle><router-link :to="'/exams/' + response.exam.category" >{{firstBig(response.exam.category)}} </router-link> >
-        <router-link :to="'/exams/' + response.exam.category + '/' + response.exam.sub_category" >{{firstBig(response.exam.sub_category)}} </router-link></ion-card-subtitle>
-      </ion-card-header>
-      
-      <ion-card-content>
-        <p>{{ response.exam.description }}</p>
-        <hr>  
-        <div class="flex justify-between bg-red-500">
-          <ion-card-subtitle>
-            Created by: <router-link :to="'/users/' + response.owner.id" >{{response.owner.name}} </router-link>
-          </ion-card-subtitle>
-          <ion-card-subtitle>{{ response.exam.created_at }}</ion-card-subtitle>
-        </div>
-        
-      </ion-card-content>
-    </template>
-  </ion-card>
+<template v-if="response.exam && response.owner">
+
+  <ExamCard :response="response"/>
+</template>
   
   <template v-if="response.qas">
     <ion-button expand="block" v-if="response.qas.length" :router-link="URL_EXAM_ID + '/take'">Take Exam</ion-button>
@@ -39,7 +22,8 @@ import { ref } from 'vue';
 import { inject } from 'vue';
 import { onMounted } from 'vue';
 
-import { IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonButton } from '@ionic/vue';
+import { IonButton } from '@ionic/vue';
+import ExamCard from '@/components/ExamCard.vue';
 
 const routeParams = useRoute().params
 const API_URL = inject('API_URL')
@@ -78,9 +62,7 @@ async function getExamOwner(){
 }
 
 
-function firstBig(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
+
 
 
 </script>

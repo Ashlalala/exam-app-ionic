@@ -9,12 +9,17 @@ import { defineStore } from 'pinia'
 export const useMainStore = defineStore('Main', {
   state: () => {
     return {
+      secretKey: '5NmhVXqSro6j9eyNO3bzw',
+      iv: '1234567890123456',
       examPage: 0
     }
   },
   actions: {
     nextPage(){
       this.examPage ++
+    },
+    clearPage(){
+      this.examPage = 0
     }
   }
 })

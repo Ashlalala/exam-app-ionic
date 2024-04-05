@@ -34,7 +34,11 @@ const routes = [
       {
         path: 'exams/:category/:subCategory/create',
         component: () => import('@/views/ExamCreatePage.vue')
-      }
+      },
+      {
+        path: '/profile/completed/:examId',
+        component: () => import('@/views/CompletedExamPage.vue'),
+      },
     ]
   },
 
@@ -50,8 +54,9 @@ const routes = [
     path: '/exam/:examId/take',
     component: () => import('@/views/ExamTakePage.vue')
   },
-  
 
+
+ 
 
   {
     path: '/users/',

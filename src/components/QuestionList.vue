@@ -1,4 +1,5 @@
 <template>
+  {{ qas }}
   <ion-list>
     <ion-card v-for="qa in qas">
       <ion-card-header>
@@ -6,22 +7,17 @@
       </ion-card-header>
 
       <ion-card-content>
-        <ion-radio-group value="space-between">
+        <ion-radio-group value="space-between" v-if="qa.answers">
           <ion-item v-if="qa.ans_r">
-            <ion-radio :value="qa.ans_r" :name="qa.id" justify="space-between" onChange="change()">{{qa.ans_r}}</ion-radio>
+            <div class="rightAns">
+              <ion-radio :value="qa.ans_r" :name="qa.id" justify="space-between" onChange="change()">{{qa.ans_r}}</ion-radio>
+            </div>
           </ion-item>
-          <ion-item v-if="qa.ans_w_1">
-            <ion-radio :value="qa.ans_w_1" :name="qa.id" justify="space-between" onChange="change()">{{qa.ans_w_1}}</ion-radio>
+          <ion-item v-for="ans in qa.answers">
+            {{ ans }}
+            <ion-radio :value="ans.val" :name="qa.id" justify="space-between" onChange="change()">{{ans.val}}  {{ ans.right ? '(Right Answer)' : '' }}</ion-radio>
           </ion-item>
-          <ion-item v-if="qa.ans_w_2">
-            <ion-radio :value="qa.ans_w_2" :name="qa.id" justify="space-between" onChange="change()">{{ qa.ans_w_2 }}</ion-radio>
-          </ion-item>
-          <ion-item v-if="qa.ans_w_3">
-            <ion-radio :value="qa.ans_w_3" :name="qa.id" justify="space-between" onChange="change()">{{ qa.ans_w_3 }}</ion-radio>
-          </ion-item>
-          <ion-item v-if="qa.ans_w_4">
-            <ion-radio :value="qa.ans_w_4" :name="qa.id" justify="space-between" onChange="change()">{{ qa.ans_w_4 }}</ion-radio>
-          </ion-item>
+          
         </ion-radio-group>
       </ion-card-content>
     </ion-card>
@@ -38,5 +34,15 @@ const props = defineProps({
     required: true
   }
 })
+
+console.log('liiiiiiiiiiiiiiiiststtstst', props.qas)
 </script>
 
+<style>
+.rightAns{
+  background-color: chartreuse;
+  width: full;
+  height: full;
+
+}
+</style>

@@ -27,7 +27,7 @@ import { ref } from 'vue';
 import { inject } from 'vue'
 import { IonItem, IonLabel, IonList, IonListHeader } from '@ionic/vue'; //for the list 
 import { IonButton, IonContent, IonPopover } from '@ionic/vue';//for popover
-import CreateCat from '../components/CreateCat.vue';
+import CreateCat from '@/components/CreateCat.vue';
 
 import { onMounted } from 'vue';
 
@@ -42,9 +42,7 @@ onMounted(() => {
 })
 function getCats(){
 // axios.get('http://localhost:8000/sanctum/csrf-cookie')
-console.log(API_URL + '/api/exams/' + URL_CAT);
 axios.get(API_URL + '/api/exams/' + URL_CAT).then(res => {
-  console.log(res)
   response.value.categories = res.data
 })
 }

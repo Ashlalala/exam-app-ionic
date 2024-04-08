@@ -39,13 +39,15 @@ const routes = [
         path: '/profile/completed/:examId',
         component: () => import('@/views/CompletedExamPage.vue'),
       },
+
+      {
+        path: '/exam/:examId/',
+        component: () => import('@/views/ExamPage.vue'),
+      },
     ]
   },
 
-  {
-    path: '/exam/:examId/',
-    component: () => import('@/views/ExamPage.vue'),
-  },
+
   {
     path: '/exam/:examId/edit',
     component: () => import('@/views/ExamEditPage.vue')

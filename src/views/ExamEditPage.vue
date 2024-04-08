@@ -1,21 +1,23 @@
 <template>
   <base-layout title="Edit Exam">
-  <ion-popover :is-open="popoverOpen" trigger="click-trigger" trigger-action="click" size="cover" side="bottom" alignment="center">
+  <ion-popover :is-open="popoverOpen" trigger="click-trigger-9" trigger-action="click" size="cover" side="bottom" alignment="center">
       <ion-content class="ion-padding">
         <CreateQuestion @uploaded="uploaded" />
       </ion-content>
     </ion-popover>
-    <ion-button @click.prevent="popoverOpen = !popoverOpen" id="click-trigger" expand="block" class="footerBtn">Add Question</ion-button>
+    <ion-button @click.prevent="popoverOpen = !popoverOpen" id="click-trigger-9" expand="block" class="footerBtn">Add Question</ion-button>
     <ion-card>
       <template v-if="response.exam && response.owner">
         <ion-card-header>
           <ion-card-title :router-link="'/exam/' + URL_EXAM_ID">{{ response.exam.name }}</ion-card-title>
-          <ion-card-subtitle><router-link :to="'/exams/' + response.exam.category">{{ firstBig(response.exam.category)
-              }}
+          <ion-card-subtitle>
+            <router-link :to="'/exams/' + response.exam.category">
+              {{ firstBig(response.exam.category)}}
             </router-link> >
             <router-link :to="'/exams/' + response.exam.category + '/' + response.exam.sub_category">{{
-        firstBig(response.exam.sub_category) }}
-            </router-link></ion-card-subtitle>
+              firstBig(response.exam.sub_category) }}
+            </router-link>
+          </ion-card-subtitle>
         </ion-card-header>
 
         <ion-card-content>
@@ -31,9 +33,8 @@
         </ion-card-content>
       </template>
     </ion-card>
-
-    <template v-if="response.qas">
-      <QuestionList :qas="response.qas" />
+    <template v-if="response.all">
+      <QuestionList :all="response.all" />
     </template>
 
 
@@ -65,22 +66,29 @@ const API_URL = inject('API_URL')
 const URL_EXAM_ID = routeParams.examId
 
 const response = ref({
-  qas: []
+  qas: [],
+  groups: [],
+  all: null,
 })
 
 
 
-function uploaded() {
+async function uploaded() {
   popoverOpen.value = false
-  getQAs()
+  await getQAs()
+  await getGroups()
+  sortGroupsAndQAs(response.value.groups, response.value.qas)
 }
-
 
 
 onMounted(async () => {
   await getExamAndOwner()
   await getQAs()
+  await getGroups()
+  sortGroupsAndQAs(response.value.groups, response.value.qas)
 })
+
+
 
 async function getQAs() {
   await axios.get(API_URL + '/api/exam/' + URL_EXAM_ID + '/qa').then(res => {
@@ -88,21 +96,34 @@ async function getQAs() {
     handleQAs(res.data.data)
   })
 }
+async function getGroups() {
+  await axios.get(API_URL + '/api/exam/' + URL_EXAM_ID + '/group').then(res => {
+    response.value.groups = []
+    res.data.data.forEach(g => {
+      let newGroup = getCleanAndDecryptedGroups(g, store.secretKey, store.iv) // The right answer should always be first in the arr
+      response.value.groups.push(newGroup)
+    })
+  })
+}
+
+function sortGroupsAndQAs(groups, qas){
+  let joinedArr = [...groups, ...qas]
+  joinedArr.sort((a, b) => compareDates(a.created_at, b.created_at))
+  response.value.all = joinedArr
+}
+
 
 
 function handleQAs(r){
   r.forEach(qa => {
     let qaNew = {
-      question: null,
-      answers: []
+      question: qa.question,
+      created_at: qa.created_at,
+      answers: getCleanAndDecrypted([qa.ans_r, qa.ans_1, qa.ans_2, qa.ans_3, qa.ans_4, qa.ans_5], store.secretKey, store.iv) // The right answer should always be first in the arr
     }
-    qaNew.question = qa.question
-    qaNew.answers = getCleanAndDecrypted([qa.ans_r, qa.ans_1, qa.ans_2, qa.ans_3, qa.ans_4, qa.ans_5], store.secretKey, store.iv) // The right answer should always be first in the arr
     response.value.qas.push(qaNew)
   })
 }
-
-
   
 function getCleanAndDecrypted(arr, key, iv){
   const ansArr = []
@@ -117,6 +138,23 @@ function getCleanAndDecrypted(arr, key, iv){
     }
   })
   return ansArr
+}
+function getCleanAndDecryptedGroups(group, key, iv){
+  let groupNew = {
+    id: group.id,
+    exam_id: group.exam_id,
+    created_at: group.created_at,
+    qas: [],
+    ans_fake: group.ans_fake//getDAesString(group.ans_fake, key, iv)
+  }
+  group.qas.forEach((qa) => {
+    let qaNew = {
+      question: qa.question, //getDAesString(qa.question, key, iv),
+      ans_r: getDAesString(qa.ans_r, key, iv)
+    }
+    groupNew.qas.push(qaNew) 
+  })
+  return groupNew
 }
 
 async function getExamAndOwner(){
@@ -135,6 +173,8 @@ async function getExamOwner() {
 
 
 
+
+
 function getDAesString(encrypted, key, iv) {//解密
     var key_hash = CryptoJS.MD5(key).toString();
     var key = CryptoJS.enc.Utf8.parse(key_hash);
@@ -149,6 +189,19 @@ function getDAesString(encrypted, key, iv) {//解密
 }
 function firstBig(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function compareDates(a, b){
+  if(dateAndTimeToInt(a).date > dateAndTimeToInt(b).date) return -1
+  if(dateAndTimeToInt(a).time > dateAndTimeToInt(b).time) return -1
+  return +1
+}
+
+function dateAndTimeToInt(a){
+  return {
+    date: parseInt(a.slice(0,4)+a.slice(5,7)+a.slice(8,10)),
+    time: parseInt(a.slice(11,13)+a.slice(14,16)+a.slice(17,19))
+  }
 }
 </script>
 

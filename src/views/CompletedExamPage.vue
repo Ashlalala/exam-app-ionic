@@ -3,11 +3,12 @@
   <template v-if="response.completedExam && response.exam && response.owner">
     <ExamCard :response="response" :completed="true"/>
 
-    <template v-if="response.qas">
+    <template v-if="response.all || response.qas || response.groups">
       lllllllllll
-      <QuestionList :qas="response.qas" />
+      <QuestionList :all="response.qas" />
     </template>
   </template>
+
 </base-layout>
 </template>
 
@@ -36,13 +37,23 @@ onMounted(async () => {
   await getExamAndOwner()
   await getAnsweredQAs()
   await getQAs()
+  await getGroups()
+  if(response.value.groups.length && response.value.qas.length) response.value.all = sortGroupsAndQAs(response.value.groups, response.value.qas)
+  else response.value.all = response.value.groups
+
+  console.log('ssssssssssssssssssssssss', response.value)
 })
+
+function sortGroupsAndQAs(groups, qas){
+  let joinedArr = [...groups, ...qas]
+  joinedArr.sort((a, b) => compareDates(a.created_at, b.created_at))
+  response.value.all = joinedArr
+}
 
 async function getAnsweredQAs() {
   await axios.get(API_URL + '/api/completed/' + URL_EXAM_ID + '/qa').then(res => {
-    // emit('uploaded', true)
     response.value.answeredQas=res.data
-    console.log(response.value.qas)
+    console.log('assaasas', res.data);
 
   })
 }
@@ -55,23 +66,26 @@ async function getQAs() {
     await axios.get(API_URL + '/api/completed/qa/' + answeredQa.qa_id).then(res => {
       let qa = res.data.data
       let qaNew = {
-      id: null,
-      question: null,
-      answers: []
-    }
-    qaNew.id = qa.id
-    qaNew.question = qa.question
-    const responseAnswers = getCleanAndDecrypted([qa.ans_r, qa.ans_1, qa.ans_2, qa.ans_3, qa.ans_4, qa.ans_5], store.secretKey, store.iv)
-    qaNew.answers = mixUp(responseAnswers)
-    // qaNew.answers = lableAccordingly(responseAnswers)
-    lableAccordingly(qaNew.answers)
-
-    response.value.qas.push(qaNew)
-
-      console.log(response.value.qas)
-      
+        id: qa.id,
+        question: qa.question,
+        answers: []
+      }
+      const responseAnswers = getCleanedAndLabeledAndDecrypted([qa.ans_r, qa.ans_1, qa.ans_2, qa.ans_3, qa.ans_4, qa.ans_5], qa.id, store.secretKey, store.iv) //The right answer should always be the first in the input array
+      console.log(responseAnswers)
+      qaNew.answers = mixUp(responseAnswers)
+      console.log(qaNew.answers)
+      response.value.qas.push(qaNew)
     })
   });
+}
+
+async function getGroups() {
+  await axios.get(API_URL + '/api/completed/' + URL_EXAM_ID + '/groups').then(res => {
+    response.value.groups = []
+    res.data.data.forEach(g => {
+      response.value.groups.push(g)
+    })
+  })
 }
 
 async function getCompleted(){
@@ -100,31 +114,31 @@ async function getExamOwner(){
 
 
 function mixUp(arr){
-  let lettersArr = ['a', 'b', 'c', 'd', 'e']
   let l = arr.length
-  
-  let output = {}
+  let output = []
 
   for(let i = 0; i<l; i++){
-    let letter = lettersArr[i]
-    let randIndexInArr = Math.floor(Math.random()*arr.length)
-    
-    output[letter] = arr[randIndexInArr]
+    let randIndexInArr = Math.floor(Math.random()*arr.length)    
+    output.push(arr[randIndexInArr])
     arr.splice(randIndexInArr, 1)
   }
   return output
 }
 
-function lableAccordingly(arr){
-  console.log('ffffffff', arr)
-}
-
-function getCleanAndDecrypted(arr, key, iv){
+function getCleanedAndLabeledAndDecrypted(arr, qaId, key, iv){
   const ansArr = []
-  arr.forEach(value => {
+  arr.forEach((value, i) => {
     let valueD = getDAesString(value, key, iv)
     if(valueD) {
-      ansArr.push(valueD)
+      let ans = {
+        val: valueD,
+        right: i == 0 ,
+        selected: false
+      }
+      response.value.answeredQas.forEach(qa=>{
+        if(valueD == qa.ans && qaId == qa.qa_id) ans.selected = true
+      })
+      ansArr.push(ans)
     }
   })
   return ansArr
@@ -144,6 +158,20 @@ function getDAesString(encrypted, key, iv) {//解密
 }
 function firstBig(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+
+function compareDates(a, b){
+  if(dateAndTimeToInt(a).date > dateAndTimeToInt(b).date) return -1
+  if(dateAndTimeToInt(a).time > dateAndTimeToInt(b).time) return -1
+  return +1
+}
+
+function dateAndTimeToInt(a){
+  return {
+    date: parseInt(a.slice(0,4)+a.slice(5,7)+a.slice(8,10)),
+    time: parseInt(a.slice(11,13)+a.slice(14,16)+a.slice(17,19))
+  }
 }
 </script>
 

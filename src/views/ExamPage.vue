@@ -1,9 +1,9 @@
 <template>
 <base-layout title="Exams">
-<template v-if="response.exam && response.owner">
 
-  <ExamCard :response="response"/>
-</template>
+  <template v-if="response.exam && response.owner">
+    <ExamCard :response="response"/>
+  </template>
   
   <template v-if="response.qas">
     <ion-button expand="block" v-if="response.qas.length" :router-link="URL_EXAM_ID + '/take'">Take Exam</ion-button>
@@ -34,6 +34,8 @@ const response = ref({})
 onMounted(async () => {
   await getExamAndOwner()
   await getQAs()
+  await getGroups()
+  response.value.exam.qAmount = response.value.qas.length + response.value.groups.length
 })
 
 async function getQAs() {
@@ -41,6 +43,16 @@ async function getQAs() {
     console.log(res)
     // emit('uploaded', true)
     response.value.qas=res.data.data
+
+  })
+}
+
+async function getGroups() {
+  await axios.get(API_URL + '/api/exam/' + URL_EXAM_ID + '/group').then(res => {
+    response.value.groups = []
+    res.data.data.forEach(g => {
+      response.value.groups.push(g)
+    })
   })
 }
 

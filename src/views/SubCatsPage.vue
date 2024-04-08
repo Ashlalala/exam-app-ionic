@@ -1,6 +1,6 @@
 <template>
   <base-layout title="Exams">
-    <ion-button @click.prevent="popoverOpen = !popoverOpen" id="click-trigger" expand="full">Create Sub-category in {{ firstBig(URL_CAT) }}</ion-button>
+  <ion-button @click.prevent="popoverOpen = !popoverOpen" id="click-trigger" expand="full">Create Sub-category in {{ firstBig(URL_CAT) }}</ion-button>
     <ion-popover :is-open="popoverOpen" trigger="click-trigger" trigger-action="click" size="cover">
       <ion-content class="ion-padding">
         <CreateCat @uploaded="uploaded" :subTo="URL_CAT" />
@@ -28,8 +28,10 @@ import { inject } from 'vue'
 import { IonItem, IonLabel, IonList, IonListHeader } from '@ionic/vue'; //for the list 
 import { IonButton, IonContent, IonPopover } from '@ionic/vue';//for popover
 import CreateCat from '@/components/CreateCat.vue';
-
+import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
+
+const router = useRouter()
 
 const URL_CAT = useRoute().params.category
 const API_URL = inject('API_URL')

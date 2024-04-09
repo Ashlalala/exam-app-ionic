@@ -1,7 +1,6 @@
 <template>
   <base-layout :title="response.exam ? response.exam.name : ''">
   <template v-if="response.all.length" v-for="one in [response.all[store.examPage]]">
-    {{ one }}
     <br>
     <template v-if="one.question">
       <ion-card>
@@ -161,6 +160,7 @@ async function submitAnsGroup({last}){
   })
   form.value = {}
   if(!last) store.nextPage()
+  updateMoveable()
 }
 async function submitExam(){
   let id = 0
@@ -208,6 +208,7 @@ onMounted(async () => {
 async function getGroups() {
   await axios.get(API_URL + '/api/exam/' + URL_EXAM_ID + '/group').then(res => {
     response.value.groups = []
+    console.log(res);
     res.data.data.forEach(g => {
       let newGroup = getCleanAndDecryptedGroups(g, store.secretKey, store.iv) // The right answer should always be first in the arr
       response.value.groups.push(newGroup)
@@ -250,6 +251,7 @@ function updateMoveable(){
       moveable.value.push(ans)
       // moveable.value.push(addToMoveable)
     })
+    console.log(moveable);
     // moveable.value.push('fake')
   }
 }

@@ -36,6 +36,10 @@ const routes = [
         component: () => import('@/views/ExamCreatePage.vue')
       },
       {
+        path: '/profile/completed',
+        component: () => import('@/views/CompletedExamsPage.vue'),
+      },
+      {
         path: '/profile/completed/:examId',
         component: () => import('@/views/CompletedExamPage.vue'),
       },
